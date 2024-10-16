@@ -18,7 +18,7 @@ int kmp(string s1,string s2){
     }
     return y==m?x-y:-1;
 }
-
+//时间复杂度O(n)
 void get_NEXT(string s2){
     int n=s2.length();
     Next[0]=-1;
@@ -28,7 +28,7 @@ void get_NEXT(string s2){
         if(s2[i-1]==s2[cn]){
             Next[i++]=++cn;
         }else if(cn>0){
-            cn=Next[cn];
+            cn=Next[cn];//cn往前跳，是因为cn保留着i-1的next
         }else {
             Next[i++]=0;
         }
