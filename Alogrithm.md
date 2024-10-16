@@ -315,7 +315,7 @@ void get_NEXT(string s2){
 
         if(s2[i-1]==s2[cn]){
 
-            Next[i++]=++cn;
+            Next[i++]=++cn;//cn表示i-1的next值
 
         }else if(cn>0){
 
