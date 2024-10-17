@@ -43,6 +43,8 @@ public class Code02_SparseTableMaximumMinimum {
 		}
 		for (int p = 1; p <= log2[n]; p++) {
 			for (int i = 1; i + (1 << p) - 1 <= n; i++) {
+				//question 为什么是 i+(1<<p)-1 而不是 i+(1<<p-1) 
+				//因为我们要扩展的是 p的位置(2的p次方) 
 				stmax[i][p] = Math.max(stmax[i][p - 1], stmax[i + (1 << (p - 1))][p - 1]);
 				stmin[i][p] = Math.min(stmin[i][p - 1], stmin[i + (1 << (p - 1))][p - 1]);
 			}
