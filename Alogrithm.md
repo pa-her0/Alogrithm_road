@@ -484,3 +484,217 @@ int main()
 }
 ```
 
+
+
+## 树上问题
+
+## 前置知识(链式前向星建图)
+
+
+
+
+
+### 树上倍增+LCA(最低公共祖先)
+
+
+
+### 
+
+```C++
+#include <bits/stdc++.h>
+using namespace std;
+
+// 链式前向星建图
+const int N = 1e5 + 10;
+int cnt = 0;
+int head[N];
+struct
+{
+    int to, next, w;
+} edge[N];
+
+void init()
+{
+    for (int i = 0; i < N; i++)
+        head[i] = -1;
+    for (int i = 0; i < N; i++)
+        edge[i].next = -1;
+    cnt = 1;
+}
+void addedge(int u, int v, int w)
+{
+    edge[cnt].to = v;
+    edge[cnt].w = w;
+    edge[cnt].next = head[u];
+    head[u] = cnt++;
+}
+
+// ST处理
+
+const int limit = 64; // 二进制的位数
+int deep[N];
+
+int STjump[N][limit];
+
+int power; // 最长的距离的二进制表示
+int log2(int m)
+{
+    int ans = 0;
+    while ((1 << ans) <= (m >> 1))
+        ans++;
+    return ans;
+}
+
+void build(int n)
+{
+    power = log2(n);
+    cnt = 1;
+}
+
+// 首先先dfs预处理ST表
+
+void dfs(int u, int f)
+{
+    deep[u] = deep[f] + 1;
+    STjump[u][0] = f;
+    for (int p = 1; p <= power; p++)
+    {
+        STjump[u][p] = STjump[STjump[u][p - 1]][p - 1];
+    }
+    for (int i = head[u]; i > 0; i = edge[i].next)
+    {
+        if (edge[i].to != f)
+        {
+            dfs(edge[i].to, u);
+        }
+    }
+}
+
+int lca(int a, int b)
+{
+    if (deep[a] < deep[b])
+    {
+        int temp = a;
+        a = b;
+        b = temp;
+    }
+
+    for (int p = power; p >= 0; p--)
+    {
+        if (deep[STjump[a][p]] >= deep[b])
+        {
+            a = STjump[a][p];
+        }
+    }
+    if (a == b)
+        return a;
+
+    for (int p = power; p >= 0; p--)
+    {
+        if (STjump[a][p] != STjump[b][p])
+        {
+            a = STjump[a][p];
+            b = STjump[b][p];
+        }
+    }
+    return STjump[a][0];
+}
+
+```
+
+### targin(最低公共祖先)
+
+```C++
+#include <bits/stdc++.h>
+using namespace std;
+const int N = 5e5 + 10;
+// 批量处理的两个节点的最低公共祖先(LAC)
+// 并查集
+int father[N];
+
+// 链式前向星建图
+
+int head[N];
+struct
+{
+    int to, next;
+} edge[N << 1];
+int cnt;
+// 查询链表(链式前向星)
+
+int check_head[N];
+struct
+{
+    int to, next, flag;
+} check_edge[N << 1];
+int c_cnt;
+
+// targin
+
+bool visited[N];
+
+int ans[N];
+// 并查集查询头节点
+
+int find(int i)
+{ // 查找节点并且扁平化
+    if (i != father[i])
+    {
+        father[i] = find(father[i]);
+    }
+    return father[i];
+}
+// 建图
+void bulid(int n)
+{
+    cnt = c_cnt = 1;
+    for (int i = 1; i <= n + 1; i++)
+        head[i] = 0;
+    for (int i = 1; i <= n + 1; i++)
+        check_head[i] = 0;
+    for (int i = 1; i <= n + 1; i++)
+        visited[i] = false;
+    for (int i = 1; i <= n; i++)
+        father[i] = i;
+}
+
+void add_edge(int u, int v)
+{
+    edge[cnt].to = v;
+    edge[cnt].next = head[u];
+    head[u] = cnt++;
+}
+
+void add_check_edge(int u, int v, int i)
+{ // i表示问题编号
+    check_edge[c_cnt].to = v;
+    check_edge[c_cnt].next = check_head[u];
+    check_edge[c_cnt].flag = i;
+    check_head[u] = c_cnt++;
+}
+// targin算法
+void targin(int u, int f)
+{
+    visited[u] = true;
+    for (int e = head[u], v; e != 0; e = edge[e].next)
+    {
+        v = edge[e].to;
+        if (v != f)
+        {
+            targin(v, u);
+            father[v] = u;
+        }
+    }
+    for (int e = check_head[u], v; e != 0; e = check_edge[e].next)
+    {
+        v = check_edge[e].to;
+        if (visited[v])
+        {
+            // cout<<check_edge[e].flag<<" "<<find(v)<<endl;
+            ans[check_edge[e].flag] = find(v); // v的代表节点
+        }
+    }
+}
+
+```
+
