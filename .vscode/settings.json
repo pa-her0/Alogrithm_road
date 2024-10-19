@@ -1,6 +1,8 @@
 {
     "cph.general.saveLocation": "",
     "files.associations": {
-        "iostream": "cpp"
+        "iostream": "cpp",
+        "chrono": "cpp",
+        "functional": "cpp"
     }
 }
