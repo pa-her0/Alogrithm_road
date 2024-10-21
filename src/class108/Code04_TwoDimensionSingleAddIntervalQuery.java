@@ -57,7 +57,7 @@ public class Code04_TwoDimensionSingleAddIntervalQuery {
 		// 不要忘了在nums中把老值改成新值
 		public void update(int x, int y, int v) {
 			add(x + 1, y + 1, v - nums[x + 1][y + 1]);
-			nums[x + 1][y + 1] = v;
+			nums[x + 1][y + 1] = v;// 将 0 0 的起始点变成 1 1
 		}
 
 		// 实际二维数组的位置是(x,y)
