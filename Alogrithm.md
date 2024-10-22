@@ -299,7 +299,7 @@ int kmp(string s1,string s2){
 
 }
 
-
+next数组: 快速匹配数组，没匹配上则跳到前一个next值来进行匹配，用于匹配问题的gao'xiao
 
 void get_NEXT(string s2){
 
