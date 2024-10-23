@@ -1,4 +1,3 @@
-package class136;
 
 // 最大异或和
 // 给定一个长度为n的数组arr，arr中都是long类型的非负数，可能有重复值
@@ -15,7 +14,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StreamTokenizer;
 
-public class Code01_MaximumXor {
+public class Main {
 
 	public static int MAXN = 51;
 
