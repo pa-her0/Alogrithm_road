@@ -21,6 +21,7 @@ int manacher(string str){
 	return max - 1;
 }
 
+// 预处理
 void manacherss(char[] a) {
 	n = a.length * 2 + 1;
 	for (int i = 0, j = 0; i < n; i++) {
@@ -339,7 +340,7 @@ int main(){
 }
 ```
 
-## 逆元求法
+## 逆元求法(除法同余)
 
 ```C++
 #include <bits/stdc++.h>
@@ -402,9 +403,52 @@ int mod_inverse(int a, int m)
 
 ```
 
-## 除法同余
+## 
+
+
 
 ## 矩阵快速幂
+
+```c++
+// * 重点： 关系矩阵
+/*
+递推式子中有n个表达式 就是 n*n的关系矩阵
+第 0 列是递推表达式的关系系数
+【m -> m+n】*关系矩阵(n*n) =[m+1 -> m+n+1] 
+*/
+vector<vector<int>> multipy(vector<vector<int>> &a,vector<vector<int>> &b){
+    int n = a.size();
+    int m=b[0].size();
+    int k=a[0].size();
+    vector<vector<int>> ans(n,vector<int>(m,0));
+
+    for (int i = 0; i<n;i++){
+        for(int j=0;j<m;j++){
+            for(int c=0;c<k;c++){
+                ans[i][j]+=a[i][c]*b[c][j];
+            }
+        }
+    }
+    return ans;
+}
+
+vector<vector<int>> pow(vector<vector<int>> &m,int p){
+    int n = m.size();
+    vector<vector<int>> ans(n,vector<int>(n,0));
+    for(int i=0;i<n;i++){
+        ans[i][i]=1;
+    }
+    for(;p!=0;p>>=1){
+        if((p&1)!=0){
+            ans =multipy(ans,m);
+        }
+        m=multipy(m,m);
+    }
+    return ans;
+}
+```
+
+
 
 ## ST表+倍增
 
@@ -491,17 +535,42 @@ int main()
 
 ## 树上问题
 
-## 前置知识(链式前向星建图)
+### 前置知识(链式前向星建图)
 
+```C++
+// 链式前向星建图
+const int N = 1e5 + 10;
+int cnt = 0;
+int head[N];
+struct
+{
+    int to, next, w;
+} edge[N];
 
+void init()
+{
+    for (int i = 0; i < N; i++)
+        head[i] = -1;
+    for (int i = 0; i < N; i++)
+        edge[i].next = -1;
+    cnt = 1;
+}
+void addedge(int u, int v, int w)
+{
+    edge[cnt].to = v;
+    edge[cnt].w = w;
+    edge[cnt].next = head[u];
+    head[u] = cnt++;
+}
+```
 
 
 
 ### 树上倍增+LCA(最低公共祖先)
 
+------
 
 
-### 
 
 ```C++
 #include <bits/stdc++.h>
@@ -705,9 +774,469 @@ void targin(int u, int f)
 
 ### 树的直径
 
+```c++
+using namespace std;
+// 直径：树上距离最远的两个点
+
+/*
+  1，两次 dfs (仅适用非负边权)  *可以得到这条直径的相关节点信息
+   （1) 随便选一个点 找最远的点
+    (2) 从最远的点 dfs
+  2， 树型dp (使用于所有树)  *只能得到树的直径长度
+
+  树上边权都为正的结论：
+  1，如果有多条直径 直径一定有共同的中间部分 (点或者路径)
+  2，树上任意一点的最远点的集合，直径的端点至少有一个在集合中
+*/
+
+//|||||||||||||||||||||||||||||
+// 方法1
+
+// 链式前向星建图
+// 链式前向星建图
+const int N = 1e6 + 10;
+int cnt = 0;
+int head[N];
+struct
+{
+    int to, next, w;
+} edge[N];
+
+void init()
+{
+    for (int i = 0; i < N; i++)
+        head[i] = 0;
+    for (int i = 0; i < N; i++)
+        edge[i].next = 0;
+    cnt = 1;
+}
+void addedge(int u, int v, int w)
+{
+    edge[cnt].to = v;
+    edge[cnt].w = w;
+    edge[cnt].next = head[u];
+    head[u] = cnt++;
+}
+
+
+// 直径的开始点
+int start;
+
+// 直径的结束点
+int End;
+
+// 直径的长度
+int diameter;
+
+// 从头结点出发，到 i 的距离
+int dist[N];
+
+// i节点的上一个节点
+int last[N];
+
+int n; // n 个点
+void dfs(int u,int f,int w){
+    last[u]=f;
+    dist[u]=dist[f]+w;
+    for(int e=head[u];e!=0;e=edge[e].next){
+        if(edge[e].to!=f){
+            dfs(edge[e].to,u,edge[e].w);
+        }
+    }
+}
+
+void longest_road(){
+    dfs(1,0,0);
+    start = 1;
+    for(int i=2;i<=n;i++){
+        if(dist[i]>dist[start]) start=i;
+    }
+    dfs(start,0,0);
+    End=1;
+    for(int i=2;i<=n;i++){
+        if(dist[i]>dist[End]) End=i;
+    }
+    diameter = dist[End];
+}
+
+// 方法2
+// Dist[u] 从u节点往下走 能走出的最大距离
+int Dist[N];
+
+// ans[u] 路径包括u的最大路径和
+int ans[N];
+
+void dp(int u,int f){
+    for(int e=head[u],v;e>0;e=edge[e].next){
+       v=edge[e].to;
+       if(v!=f){
+        dp(v,u);
+       }
+       }
+       for(int e=head[u],v;e>0;e=edge[e].next){
+        v=edge[e].to;
+        if(v!=f){
+            diameter=max(diameter,Dist[u]+Dist[v]+edge[e].w);
+            Dist[u]=max(Dist[u],Dist[v]+edge[e].w);
+        }
+       }
+
+}
+int main(){
+    cin >>n;
+    init();diameter=INT_MIN;
+    for(int i=0;i<n-1;i++){
+        int u,v,w;
+        cin>>u>>v>>w;
+        addedge(u,v,w);
+        addedge(v,u,w);
+    }
+    //longest_road();
+    dp(1,0);
+    cout<<diameter<<endl;
+    return 0;
+}
+```
+
+
+
 ### 树的重心
 
+#### 不带点权
+
+```C++
+/*
+  重心的定义：
+     1，最大子树的节点数最少
+     2，每颗子树的节点数不超过总结点的一半
+     3，以重心为根时，所有节点走向该节点的总边数最少
+  重心的性质：
+     1，树上有重心，两个重心一定相邻
+     2，树上增加或者删除叶子节点，转移的重心最多移动一条边
+     3，两棵树连起来，新树的重心一定在原来两棵树的重心的路径上
+     4，如果是正边权，所有节点走向重心的总距离和最小
+*/
+#include<bits/stdc++.h>
+using namespace std;
+
+// 链式前向星建图
+const int N = 1e5 + 10;
+int cnt = 0;
+int head[N];
+struct
+{
+    int to, next, w;
+} edge[N];
+
+void init()
+{
+    for (int i = 0; i < N; i++)
+        head[i] = -1;
+    for (int i = 0; i < N; i++)
+        edge[i].next = -1;
+    cnt = 1;
+}
+void addedge(int u, int v, int w)
+{
+    edge[cnt].to = v;
+    edge[cnt].w = w;
+    edge[cnt].next = head[u];
+    head[u] = cnt++;
+}
+
+// 定义1 最大子树的节点个数最少
+int Size[N];// i节点的子树大小
+int best=INT_MAX,center;
+int n;
+
+void dfs(int u,int f){
+    Size[u]=1;
+    int maxSub=0;
+    for(int e=head[u],v;e!=0;e=edge[e].next){
+        v=edge[e].to;
+        if(v!=f){
+            dfs(v,u);
+            Size[u]+=Size[v];
+            maxSub=max(maxSub,Size[v]); //取子树的maxsub
+        }
+    }
+    maxSub=max(maxSub,n-Size[u]); // 取自己的maxsub
+    if(maxSub<best||(maxSub==best&&u<center)){
+        best=maxSub;
+        center=u;
+    }
+}
+
+// 定义2
+int MaxSub[N];
+int SIZE[N];
+void dfs(int u,int f){
+    SIZE[u]=1;
+    MaxSub[u]=0;
+    for(int e=head[u],v;e!=0;e=edge[e].next){
+       v=edge[e].to;
+       if(v!=f){
+        dfs(v,u);
+        SIZE[u]+=SIZE[v];
+        MaxSub[u]=max(MaxSub[u],SIZE[v]);
+       }
+    }
+    MaxSub[u]=max(MaxSub[u],n-SIZE[u]);
+}
+int main(){
+    return 0;
+}
+```
+
+
+
+#### 带点权
+
+```c++
+#include<bits/stdc++.h>
+using namespace std;
+// 带点权求重心
+
+
+// 链式前向星建图
+const int N = 1e6 + 10;
+int cnt = 0;
+int head[N];
+struct
+{
+    int to, next, w;
+} edge[N];
+
+void init()
+{
+    for (int i = 0; i < N; i++)
+        head[i] = 0;
+    for (int i = 0; i < N; i++)
+        edge[i].next = 0;
+    cnt = 1;
+}
+void addedge(int u, int v, int w)
+{
+    edge[cnt].to = v;
+    edge[cnt].w = w;
+    edge[cnt].next = head[u];
+    head[u] = cnt++;
+}
+
+int best=INT_MAX,center;
+int Size[N];
+int path[N];
+
+int n;
+int cow[N];
+int cowSum=0;
+
+
+void dfs(int u,int f){
+    Size[u]=cow[u];
+    int maxSub=0;
+    for(int e=head[u],v;e!=0;e=edge[e].next){
+       v=edge[e].to;
+       if(v!=f){
+        dfs(v,u);
+        Size[u]+=Size[v];
+        maxSub=max(maxSub,Size[v]);
+       }
+    }
+    maxSub=max(maxSub,cowSum-Size[u]);
+    if(maxSub<best){
+        best=maxSub;
+        center=u;
+    }
+}
+
+void dfs_road(int u,int f){
+    for(int e=head[u],v;e!=0;e=edge[e].next){
+        v=edge[e].to;
+        if(v!=f){
+            path[v]=path[u]+edge[e].w;
+            dfs_road(v,u);
+        }
+    }
+}
+int main(){
+    init();
+    cin>>n;
+    for(int i=1;i<=n;i++){
+       cin>>cow[i];
+       cowSum+=cow[i];
+    }
+    for(int i=1;i<n;i++){
+        int u,v,w;
+        cin>>u>>v>>w;
+        addedge(u,v,w);
+        addedge(v,u,w);
+    }
+    dfs(1,0);
+    path[center]=0;
+    dfs_road(center,0);
+    long long sum=0;
+    // for(int i=1;i<=n;i++){
+    //     cout<<path[i]<<" "<<cow[i]<<endl;
+    // }
+    for(int i=1;i<=n;i++){
+        sum+=path[i]*cow[i];
+    }
+    cout<<sum<<endl;
+    return 0;
+}
+```
+
+
+
 ### 树上差分
+
+```C++
+#include<bits/stdc++.h>
+using namespace std;
+/*
+  树上点差分
+  a -> b 路径上增加 v
+  a+v b+v lca(最低公共祖先)-v lca的父亲节点-v
+  a的权重 = a的权重 + a的所有节点的权重
+  
+  树上边差分
+  a -> b
+  a+v b+v lca-2*v
+*/
+
+// 链式前向星建图
+const int N = 1e5 + 10;
+int cnt = 0;
+int head[N];
+struct
+{
+    int to, next, w;
+} edge[N];
+
+void init()
+{
+    for (int i = 0; i < N; i++)
+        head[i] = 0;
+    for (int i = 0; i < N; i++)
+        edge[i].next = 0;
+    cnt = 1;
+}
+void addedge(int u, int v)
+{
+    edge[cnt].to = v;
+    edge[cnt].next = head[u];
+    head[u] = cnt++;
+}
+
+// ST处理
+
+const int limit = 64; // 二进制的位数
+int deep[N];
+
+int STjump[N][limit];
+
+int power; // 最长的距离的二进制表示
+int log2(int m)
+{
+    int ans = 0;
+    while ((1 << ans) <= (m >> 1))
+        ans++;
+    return ans;
+}
+
+void build(int n)
+{
+    power = log2(n);
+}
+
+// 首先先dfs预处理ST表
+
+void dfs(int u, int f)
+{
+    deep[u] = deep[f] + 1;
+    STjump[u][0] = f;
+    for (int p = 1; p <= power; p++)
+    {
+        STjump[u][p] = STjump[STjump[u][p - 1]][p - 1];
+    }
+    for (int i = head[u]; i > 0; i = edge[i].next)
+    {
+        if (edge[i].to != f)
+        {
+            dfs(edge[i].to, u);
+        }
+    }
+}
+
+int lca(int a, int b)
+{
+    if (deep[a] < deep[b])
+    {
+        int temp = a;
+        a = b;
+        b = temp;
+    }
+
+    for (int p = power; p >= 0; p--)
+    {
+        if (deep[STjump[a][p]] >= deep[b])
+        {
+            a = STjump[a][p];
+        }
+    }
+    if (a == b)
+        return a;
+
+    for (int p = power; p >= 0; p--)
+    {
+        if (STjump[a][p] != STjump[b][p])
+        {
+            a = STjump[a][p];
+            b = STjump[b][p];
+        }
+    }
+    return STjump[a][0];
+}
+long long ans[N];
+void dfs2(int u,int f){
+    for(int e=head[u],v;e!=0;e=edge[e].next){
+        v=edge[e].to;
+        if(v!=f){
+            dfs2(v,u);
+            ans[u]+=ans[v];
+        }
+    }
+}
+int n,K;
+int main(){
+    cin>>n>>K;
+    build(n);
+    init();
+    for(int i=1;i<n;i++){
+        int u,v;
+        cin>>u>>v;
+        addedge(u,v);
+        addedge(v,u);
+    }
+    
+    dfs(1,0);
+    for(int i=0;i<K;i++){
+        int a,b,Lca,father;
+        cin>>a>>b;
+        Lca=lca(a,b);
+        father=STjump[Lca][0];
+        ans[a]++;ans[b]++;ans[Lca]--;ans[father]--;
+    }
+    long long Max=0;
+    dfs2(1,0);
+    for(int i=1;i<=n;i++){
+        Max=max(Max,ans[i]);
+    }
+    cout<<Max<<endl;
+    return 0;
+}
+```
 
 
 
@@ -881,41 +1410,420 @@ int K_th(int k)
 
 ### 空间向量线性基
 
+```
+
+```
+
 
 
 ## 高斯消元
 
+高斯消元 加法和异或同理
+
+```C++
+#include <bits/stdc++.h>
+using namespace std;
+
+const int N = 55;
+const double sml = 1e-7;
+vector<vector<double>> gauss(N, vector<double>(N));
+int n; // 变量个数、
+
+void swap(int i, int j)
+{
+    double temp;
+    for (int t = 0; t <= n; t++)
+    {
+        temp = gauss[i][t];
+        gauss[i][t] = gauss[j][t];
+        gauss[j][t] = temp;
+    }
+}
+
+int guass_add()
+{
+    for (int i = 0; i < n; i++)
+    {
+        int maxl = i;
+        for (int j = 0; j < n; j++)
+        {
+            if (j < i && abs(gauss[j][j]) >= sml)
+            {
+                continue;
+            }
+            if (abs(gauss[j][i]) > abs(gauss[maxl][i]))
+            {
+                maxl = j;
+            }
+        }
+        swap(i, maxl);
+        // 如果它为0,如何检测他的解的个数
+        // if (abs(temp) < sml)
+        //     return 0;
+        if (abs(gauss[i][i]) >= sml)
+        {
+            double temp = gauss[i][i];
+            for (int k = i; k <= n; k++)
+            {
+                gauss[i][k] /= temp;
+            }
+
+            for (int j = 0; j < n; j++)
+            {
+                if (j != i)
+                {
+                    double rate = gauss[j][i] / gauss[i][i];
+                    for (int k = i; k <= n; k++)
+                    {
+                        gauss[j][k] -= gauss[i][k] * rate;
+                    }
+                }
+            }
+        }
+    }
+
+    int sign = 1;
+    for (int i = 0; i < n; i++)
+    {
+        if (abs(gauss[i][i]) < sml && abs(gauss[i][n]) >= sml)
+        {
+            sign = -1;
+            break;
+        }
+        if (abs(gauss[i][i]) < sml)
+        {
+            sign = 0;
+        }
+    }
+    if (sign == 1)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            printf("x%d=%.2lf\n", i + 1, gauss[i][n]);
+        }
+    }
+    else
+    {
+        cout << sign << endl;
+    }
+    // for(int i=0; i<n; i++){
+    //     for(int j=0; j<=n; j++){
+    //         cout<<gauss[i][j]<<" ";
+    //     }
+    //     cout<<endl;
+    // }
+    return 0;
+}
+int main()
+{
+    // int k = guass_add();
+    // if (k == 0)
+    // {
+    //     cout << "No Solution" << endl;
+    // }
+    // else
+    // {
+    //     for (int i = 0; i < n; i++)
+    //     {
+    //         printf("%.2f\n", gauss[i][n]);
+    //     }
+    // }
+    cin >> n;
+    for (int i = 0; i < n; i++)
+    {
+        for (int j = 0; j <= n; j++)
+        {
+            cin >> gauss[i][j];
+        }
+    }
+
+    guass_add();
+    return 0;
+}
+```
+
+
+
 ## 01 分数规划
+
+```
+
+```
+
+
 
 ## DP问题
 
 ### 区间dp
 
+```
+
+```
+
 ### 树形dp
+
+```
+
+```
+
+
 
 ### 状压dp
 
+```
+
+```
+
+
+
 ### 数位dp
+
+```
+
+```
+
+
 
 ### 轮廓线dp
 
+```
+
+```
+
+
+
 ### 三进制状压dp
+
+```
+
+```
+
+
 
 ## 图论
 
 ### 离散化(模板)
 
+```C++
+int old[N];
+int New[N];
+int n;
+    for(int i=1;i<=n;i++) {
+        cin>>old[i];
+        New[i]=old[i];
+        }
+        sort(old,old+n);
+    int cnt=n;
+    cnt=unique(old+1,old+1+n)-(old+1);
+    for(int i=1;i<=cnt;i++){
+        New[i]=lower_bound(old+1,old+1+n,New[i])-old;
+    }
+
+    for(int i=1;i<=cnt;i++) cout<<New[i]<<" ";//每个值在原始位置的大小
+```
+
+
+
+### 并查集
+
+```C++
+const int N = 1e5 + 10;
+int father[N];
+// 初始化并查集
+void build(int n) {
+    for (int i = 0; i < n; i++) {
+        father[i] = i;
+    }
+}
+// 查找元素的根，并进行路径压缩
+int find(int i) {
+    if (i != father[i]) {
+        father[i] = find(father[i]);
+    }
+    return father[i];
+}
+// 判断两个元素是否属于同一个集合
+bool isSameSet(int x, int y) {
+    return find(x) == find(y);
+}
+// 合并两个集合
+void unite(int x, int y) {
+    father[find(x)] = find(y);
+}
+
+```
+
+
+
 ### 最小生成树
+
+##### kruksal算法
+
+```C++
+#include <bits/stdc++.h>
+using namespace std;
+
+// 并查集模板
+
+const int N = 1e5 + 10;
+int father[N];
+
+// 初始化并查集
+void build(int n) {
+    for (int i = 0; i < n; i++) {
+        father[i] = i;
+    }
+}
+
+// 查找元素的根，并进行路径压缩
+int find(int i) {
+    if (i != father[i]) {
+        father[i] = find(father[i]);
+    }
+    return father[i];
+}
+
+// 判断两个元素是否属于同一个集合
+bool isSameSet(int x, int y) {
+    return find(x) == find(y);
+}
+
+// 合并两个集合
+void unite(int x, int y) {
+    father[find(x)] = find(y);
+}
+
+// 最小生成树 (Kruskal 算法)
+struct Edge {
+    int u, v, weight;
+    bool operator<(const Edge& other) const { // 通过这个改变sort的排序顺序
+        return weight < other.weight;
+    }
+};
+
+vector<Edge> edges;
+
+int kruskal(int n, int m) {
+    // n: 顶点数, m: 边数
+    build(n); // 初始化并查集
+    sort(edges.begin(), edges.end()); // 按照权重排序边
+
+    int mst_weight = 0;
+    int edges_used = 0;
+
+    for (int i = 0; i < m; i++) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+        int weight = edges[i].weight;
+
+        if (!isSameSet(u, v)) {
+            unite(u, v);
+            mst_weight += weight;
+            edges_used++;
+            if (edges_used == n - 1) {
+                break;
+            }
+        }
+    }
+    return mst_weight;
+}
+
+```
+
+
 
 ### DIjkstra算法
 
+```C++
+/ 最短路径 (Dijkstra 算法)
+const int INF = 1e9;
+vector<pair<int, int>> adj[N]; // 邻接节点和权重
+
+vector<int> dijkstra(int start, int n) {
+    vector<int> dist(n, INF);
+    dist[start] = 0;
+priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;  // 默认用pair的first来比较，相等则用second来比较
+    pq.push({0, start});
+
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+
+        if (d > dist[u]) continue;
+
+        for (auto [v, weight] : adj[u]) {
+            if (dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+    return dist;
+}
+
+```
+
+
+
 ### 分层图最短路
+
+```
+
+```
+
+
 
 ### Floyd算法
 
+```C++
+for(int k=1;k<=n;k++){
+    for(int i=1;i<=n;i++){
+        for(int j=1;j<=n;j++){
+            dp[i][j]=min(dp[i][j],dp[i][k]+dp[k][j]);
+        }
+    }
+}
+```
+
+
+
 ### SPFA
+
+```C++
+// 最短路径 (SPFA 算法)
+vector<int> spfa(int start, int n) {
+    vector<int> dist(n, INF);
+    vector<bool> in_queue(n, false);
+    queue<int> q;
+
+    dist[start] = 0;
+    q.push(start);
+    in_queue[start] = true;
+
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        in_queue[u] = false;
+
+        for (auto [v, weight] : adj[u]) {
+            if (dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+                if (!in_queue[v]) {
+                    q.push(v);
+                    in_queue[v] = true;
+                }
+            }
+        }
+    }
+    return dist;
+}
+
+```
+
+
 
 ### 拓扑排序
 
+------
 
-
+通过 节点的入度大小来构建优先队列来实现
