@@ -62,7 +62,7 @@ public class Code02_BigShow {
 		for (int i = 0; i < n; i++) {
 			ans[i][i] = 1;
 		}
-		for (; p != 0; p >>= 1) {
+		for (; p != 0; p >> 1) {
 			if ((p & 1) != 0) {
 				ans = multiply(ans, m);
 			}

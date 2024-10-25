@@ -49,13 +49,13 @@ public class Code01_Diameter3 {
 	}
 
 	public static void dp(int u, int f) {
-		for (int e = head[u], v; e != 0; e = next[e]) {
+		for (int e = head[u], v; e > 0; e = next[e]) {
 			v = to[e];
 			if (v != f) {
 				dp(v, u);
 			}
 		}
-		for (int e = head[u], v; e != 0; e = next[e]) {
+		for (int e = head[u], v; e > 0; e = next[e]) {
 			v = to[e];
 			if (v != f) {
 				// 干脆直接去更新diameter
