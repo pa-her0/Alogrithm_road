@@ -8,7 +8,7 @@ int manacher(string str){
 	int max = 0;
 	for (int i = 0, c = 0, r = 0, len; i < n; i++) {
 		len = r > i ? Math.min(p[2 * c - i], r - i) : 1;
-		while (i + len < n && i - len >= 0 && ss[i + len] == ss[i - len]) {
+	while (i + len < n && i - len >= 0 && ss[i + len] == ss[i - len]) {
 			len++;
 		}
 		if (i + len > r) {
@@ -33,6 +33,7 @@ void manacherss(char[] a) {
 
 
 ```c++
+int cnt=1; // 层次编号
 void insert(string word){
 	int cur = 1;
 	pass[cur]++;
@@ -299,7 +300,7 @@ int kmp(string s1,string s2){
 
 }
 
-next数组: 快速匹配数组，没匹配上则跳到前一个next值来进行匹配，用于匹配问题的gao'xiao
+next数组: 快速匹配数组，没匹配上则跳到前一个next值来进行匹配，用于匹配问题 (前后缀的匹配程度)
 
 void get_NEXT(string s2){
 
@@ -401,7 +402,9 @@ int mod_inverse(int a, int m)
 
 ```
 
+## 除法同余
 
+## 矩阵快速幂
 
 ## ST表+倍增
 
@@ -697,4 +700,222 @@ void targin(int u, int f)
 }
 
 ```
+
+## 
+
+### 树的直径
+
+### 树的重心
+
+### 树上差分
+
+
+
+
+
+
+
+## 线性基
+
+###  普通线性基
+
+```c++
+#include <bits/stdc++.h>
+using namespace std;
+/*
+  线性基是对于二进制中的每一位的选取
+  一: 普通线性基
+  */
+const int bit = 52;
+
+long long Xor[64];
+
+bool insert(long long m)
+{
+    for (int i = bit - 1; i >= 0; i--)
+    {
+        if (m >> i == 1)
+        {
+            if (Xor[i] == 0)
+            {
+                Xor[i] = m;
+                return true;
+            }
+            m = m ^ Xor[i];
+        }
+    }
+    return false;
+}
+
+// 所有异或可能值
+void cout_Vordata()
+{
+    vector<long long> b;
+    b.push_back(0);
+
+    for (int i = bit; i >= 0; i--)
+    {
+        if (Xor[i])
+        {
+            int n = b.size();
+            for (int j = 0; j < n; j++)
+            {
+                b.push_back(Xor[i] ^ b[j]);
+            }
+        }
+    }
+    for (int i = 0; i < b.size(); i++)
+    {
+        cout << b[i] << " ";
+    }
+}
+// 线性基的二进制形式
+void cout_binary(){
+    for (int i = 0; i < 32; i++)
+    {
+        if (Xor[i])
+        {
+            bitset<32> binary(Xor[i]);
+            cout << binary << endl;
+        }
+    }
+}
+
+
+    // 异或最大值
+long long Xor_max(){
+    long long Max = 0;
+    for (int i = bit - 1; i >= 0; i--)
+    {
+        Max = max(Max, Max ^ Xor[i]);
+    }
+    return Max;
+    }
+
+  
+```
+
+
+
+### 标准线性基
+
+```c++
+#include <bits/stdc++.h>
+using namespace std;
+
+// 高斯消元 求 标准线性基
+
+const int MAXN = 1e5 + 10;
+const int bit = 64;
+int a[MAXN];
+
+void swap(int p1, int p2)
+{
+    int temp = a[p1];
+    a[p1] = a[p2];
+    a[p2] = temp;
+}
+
+int n;
+int len;  // len是前几行是以及找到了线性基的
+int zero; // 是否可以异或出0
+
+void gaosi_create()
+{
+    len = 1;
+    for (int i = bit; i >= 0; i--)
+    {
+        for (int j = len; j <= n; j++)
+        {
+            if ((a[j] & (1 << i)) != 0)
+            {
+                swap(j, len);
+                break;
+            }
+        }
+        if ((a[len] & (1 << i)) != 0)
+        {
+            for (int j = 1; j <= n; j++)
+            {
+                if (j != len && (a[j] & (1 << i)) != 0)
+                {
+                    a[j] ^= a[len];
+                }
+            }
+            len++;
+        }
+    }
+    len--;
+    zero = (len != n);
+}
+
+int K_th(int k)
+{
+    if (zero && k == 1)
+    {
+        return 0;
+    }
+    if (zero)
+    {
+        k--;
+    }
+    if (k >= (1 << len))
+    {
+        // k的位数大于线性基的位数
+        return -1;
+    }
+    int ans = 0;
+    for (int i = len, j = 0; i >= 1; i--, j++)
+    {
+        if ((k & (1 << j)) != 0)
+        {
+            ans ^= a[i];
+        }
+    }
+    return ans;
+}
+
+```
+
+
+
+### 空间向量线性基
+
+
+
+## 高斯消元
+
+## 01 分数规划
+
+## DP问题
+
+### 区间dp
+
+### 树形dp
+
+### 状压dp
+
+### 数位dp
+
+### 轮廓线dp
+
+### 三进制状压dp
+
+## 图论
+
+### 离散化(模板)
+
+### 最小生成树
+
+### DIjkstra算法
+
+### 分层图最短路
+
+### Floyd算法
+
+### SPFA
+
+### 拓扑排序
+
+
 

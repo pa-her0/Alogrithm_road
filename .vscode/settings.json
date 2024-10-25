@@ -3,6 +3,7 @@
     "files.associations": {
         "iostream": "cpp",
         "chrono": "cpp",
-        "functional": "cpp"
+        "functional": "cpp",
+        "*.tcc": "cpp"
     }
 }
