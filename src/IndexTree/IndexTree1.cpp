@@ -1,9 +1,7 @@
  #include<bits/stdc++.h>
 using namespace std;
 // 范围查询 单点增加
-
 const int N=5e5+10;
-
 //*树状数组-> 下标从1开始 */
 int tree[N]; // 树状数组
 /*
