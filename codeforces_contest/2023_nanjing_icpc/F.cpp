@@ -2,40 +2,48 @@
 using namespace std;
 void slove(){
     int n,m;
-   
     cin >> n >> m;
-    vector<int> flag(n);
-    vector<vector<int>> num(n,vector<int>(m));
-    int q,temp;
+    vector<vector<int>> op(m+1);
+    vector<vector<int>> G(n+1);
+    vector<int> in(n+1);
     for(int i=1;i<=n;i++){
-        cin >> flag[i];
-       for(int j=0;j<q;j++){
-        cin >> num[i][j];
-
-       }
-    }
-    // for(int i=1;i<=n;i++){
-    //     for(int j=1;j<num[i].size();j++) cout<<num[i][j]<<" ";
-    //     cout<<endl;
-    // }
-    int j;
-    bool ans=false;
-    for(int i=2;i<=n;i++){
-        map <int,int>mp;
-       for( j=0;j<flag[i-1];j++){
-          mp[num[i-1][j]]++;
-       }
-       for( j=0;j<flag[i];j++){
-        if(!mp[num[i][j]]){
-            ans=true;
-            break;
+         int temp;cin >> temp;
+        for(int j=0;j<temp;j++){
+            int t;cin >> t;
+            op[t].push_back(i);// t节点的操作
         }
-       }
-       cout << j <<endl;
-    for(int k=1;k<=j-1;k++) cout << k << " ";
-    cout << j+1 << " " << j <<" ";
-    for(int k=j+2;k<=n;k++) cout << k << " ";
     }
+    
+    // 构建依赖图
+    for(int i=1;i<=m;i++){
+        int s=op[i].size();
+        for(int j=0;j<s-1;j++){
+           G[op[i][j]].push_back(op[i][s-1]); // t节点的操作永远由最后一个操作决定
+           in[op[i][s-1]]++;
+        }
+    }
+    priority_queue<int> Q;
+    for(int i=1;i<=n;i++){
+        if(in[i]==0) Q.push(i);
+    }
+    vector<int>ans(n+1);
+    int flag=1;
+    while(!Q.empty()){
+        int x=Q.top();Q.pop();
+        ans[flag++]=x;
+        for(int v:G[x]){
+            in[v]--;
+            if(in[v]==0) Q.push(v);
+        }
+    }
+    bool ok=false;
+    for(int i=1;i<=n;i++) {
+        if(ans[i]!= i) ok=true;
+    }
+    if(ok){
+        cout << "Yes"<<endl;
+        for(int i=1;i<=n;i++) cout<<ans[i]<<(n==i?'\n':' ');
+    }else cout << "No" <<endl;
 }
 
 int main(){
