@@ -1,4 +1,4 @@
-# ALOGRITHM
+# **ALOGRITHM**
 
 [TOC]
 
@@ -6,338 +6,105 @@
 
 
 
-## **Manacher算法**
+# 动态规划
 
-```c++
-int manacher(const string& str) {
-    // 预处理字符串
-    string ss = "#";
-    for (char ch : str) {
-        ss += ch;
-        ss += "#";
-    }
-    int n = ss.length();
-    vector<int> p(n, 0);
-    int center = 0, right = 0, maxLen = 0;
 
-    // 查找最长回文子串
-    for (int i = 0, c = 0, r = 0, len; i < n; ++i) {
-        len = (r > i) ? min(p[2 * c - i], r - i) : 1;
-        while (i + len < n && i - len >= 0 && ss[i + len] == ss[i - len]) {
-            ++len;
-        }
-        if (i + len > r) {
-            r = i + len;
-            c = i;
-        }
-        maxLen = max(maxLen, len);
-        p[i] = len;
-    }
 
-    return maxLen - 1;
-}
+
+
+## 区间dp
+
+```
+区间 DP 的基本思想
+区间 DP 的核心在于如何有效地求解区间上某个问题的最优解。通常会考虑如何通过更小的区间的解来合并、构造更大区间的解。
+
+区间 DP 的状态可以表示为一个二维数组 dp[l][r]，表示区间 [l, r] 的最优解。状态转移方程往往基于对区间的划分，将问题划分为两个更小的子区间进行求解。
+
+区间 DP 的一般步骤
+定义状态：
+
+dp[l][r] 表示从区间 l 到区间 r 的最优解。
+状态转移方程：
+
+根据问题的需求，将区间 [l, r] 分成若干部分，利用这些子区间的解来更新 dp[l][r]。
+状态转移方程往往涉及一个分割点 k，即 dp[l][r] 可以通过子区间 [l, k] 和 [k+1, r] 的解来得到。
+初始化：
+
+确定初始的单个区间的值，通常是区间长度为 1 的情况。
+计算顺序：
+
+需要从小的区间开始计算，逐步扩展到更大的区间，最终求解整个区间的最优解。
+```
+
+### 树形dp
+
+```
+树形 DP 的基本步骤
+树的表示方式：
+
+通常用邻接表表示树。
+定义状态：
+
+通常状态和节点相关，例如 dp[u] 表示以节点 u 为根的子树的最优解。
+状态转移方程：
+
+状态转移通常依赖于节点的子节点的状态，比如通过遍历节点的所有子节点来更新父节点的状态。
+递归求解：
+
+使用 DFS（深度优先搜索）来从叶子节点递归地求解父节点的状态。
 ```
 
 
 
-## **前缀树**
+## 状压dp
 
-
-```c++
-int cnt = 1; // 层次编号
-// 插入单词
-void insert(const string& word) {
-    int cur = 1;
-    pass[cur]++;
-    for (char ch : word) {
-        int path = ch - 'a';
-        if (tree[cur][path] == 0) {
-            tree[cur][path] = ++cnt;
-        }
-        cur = tree[cur][path];
-        pass[cur]++;
-    }
-    end[cur]++;
-}
-// 查询前缀的数量
-int prefixNumber(const string& prefix) {
-    int cur = 1;
-    for (char ch : prefix) {
-        int path = ch - 'a';
-        if (tree[cur][path] == 0) {
-            return 0;
-        }
-        cur = tree[cur][path];
-    }
-    return pass[cur];
-}
-// 删除单词
-void deleteWord(const string& word) {
-    if (prefixNumber(word) > 0) {
-        int cur = 1;
-        for (char ch : word) {
-            int path = ch - 'a';
-            if (--pass[tree[cur][path]] == 0) {
-                tree[cur][path] = 0;
-                return;
-            }
-            cur = tree[cur][path];
-        }
-        end[cur]--;
-    }
-}
-// 清空前缀树
-void clear() {
-    memset(tree, 0, sizeof(tree));
-    memset(pass, 0, sizeof(pass));
-    memset(end, 0, sizeof(end));
-    cnt = 1;
-}
 ```
-
-
-
-## **树状数组**
-
-### 一维数组
-
-#### **单点增加、范围查询**
-
-
-```c++
-// 范围查询 单点增加
-//*树状数组-> 下标从1开始 */
-int tree[N]; // 树状数组
-/*
-树状数组所管束的范围是 [去掉二进制的lowbit+1,自己] 
-*/
-//lowbit   i最右侧的1的状态
-
-int n;// 原数组长度
-int lowbit(int n){
-    return n & -n;
-}
-
-void add(int i,int v){
-    while(i<=n){
-        tree[i] += v;
-        i +=lowbit(i);
-    }
-}
-//这个sum 是从 1-i 范围的
-int sum(int i){
-    int ans = 0;
-    while(i > 0){
-        ans += tree[i];
-        i -= lowbit(i);
-    }
-    return ans;
-}
-```
-
-
-
-#### 范围增加，单点查询
-
-#####    将tree数组变成原数组的差分数组
-
-```c++
-// 单点查询 范围增加
-/* 原始数组变成差分数组 -> 用差分数组来构建Tree数组
-树状数组-> 下标从1开始 */
-int tree[N]; // 树状数组
-/*
-树状数组所管束的范围是 [去掉二进制的lowbit+1,自己] 
-*/
-// lowbit   i最右侧的1的状态
-int n;// 原数组长度
-int lowbit(int n){
-    return n & -n;
-}
-// l-r 范围增加 v 
-void add(int l,int r,int v){
-    while(l <= n){
-        tree[l] += v;
-        l +=lowbit(l);
-    }
-    int x = r+1;
-    while(x <= n){
-        tree[x] -= v;
-        x +=lowbit(x);
-    }
-}
-// 这个sum 是从 1-i 范围的 用差分来构建 前i个就是原数组 i 的值
-int find(int i){
-    int ans = 0;
-    while(i > 0){
-        ans += tree[i];
-        i -= lowbit(i);
-    }
-    return ans;
-}
 
 ```
 
 
 
-#### **范围增加，范围查询**
+## 数位dp
 
-```c++
-// 范围增加 范围查询( l - r 的范围累加和)
+```
+数位 DP 的一般步骤
+数位分解：
 
-/* Di 是差分
-Tree1 -> Di
-Tree2 -> (i-1)*Di 几号位置加就是 (i-1)*v
-1-r 的累加和 k*(Di) - ((i-1)*Di)
-*/
-const int N = 1e5 + 10;
-long long  Tree1[N];
-long long Tree2[N];
-int n,m; // 数组长度
+将数字转化为数组，从高位到低位存储，以便按位操作。
+状态定义：
 
-int lowbit(int m)
-{
-    return m & -m;
-}
+通常用 dp[pos][status] 表示当前在第 pos 位时的一种状态。例如，状态可以包含是否受限、前一位是否为某个特定数字等。
+递归转移：
 
-void add(long long a[], int i, long long v)
-{
-    while (i <= n)
-    {
-        a[i] += v;
-        i += lowbit(i);
-    }
-}
+根据当前位的数字和限制情况来判断如何转移。
+在递归过程中，考虑当前位的所有可能值，然后转移到下一位。
+记忆化：
 
-long long sum(long long a[], int i)
-{
-    long long ans = 0;
-    while (i > 0)
-    {
-        ans += a[i];
-        i -= lowbit(i);
-    }
-    return ans;
-}
-
-void add(int l, int r, long long v)
-{
-    add(Tree1, l, v);
-    add(Tree1, r + 1, -v);
-    add(Tree2, l, (l - 1) * v);
-    add(Tree2, r + 1, -r*v);
-}
-
-long long sum_rage(int l, int r)
-{
-    return sum(Tree1, r) * r - sum(Tree2, r) - sum(Tree1, l - 1) * (l - 1) + sum(Tree2, l - 1);
-}
+将已经计算过的状态存储在 dp 数组中，以避免重复计算。
 ```
 
 
 
-### 二维数组
+## 轮廓线dp
 
-#### 单点增加和范围查询
-
-```c++
-// 二维范围查询 单点增加
-
-int n,m; // n行 m列 下标要从 1 1 开始
-int Tree[N][N];
-int lowbit(int m){
-    return m&-m;
-}
-
-int sum(int x,int y,int v){
-    int ans=0;
-    for (int i=x;i>0;i-=lowbit(i)){
-        for (int j=y;j>0;j-=lowbit(j)){
-            ans+=Tree[i][j];
-        }
-    }
-    return ans;
-}
-
-int add(int x,int y,int v){
-    for(int i=x;i<=n;i+=lowbit(i)){
-        for (int j=y;j<=m;j+=lowbit(j)){
-            Tree[i][j]+=v;
-        }
-    }
-}
+```
 
 ```
 
 
 
-#### **范围增加和范围查询**
+## 三进制状压dp
 
-```c++
-// 二维单点查询 范围增加
-
-/*
-  求和的差分信息是
-      Tree1 D[i][j]
-      sum(1,1,n,m)=(n+1)*(m+1)*D[i][j] Tree1
-      -(m+1)*|(1->m)(1->n) (D[i][j]*i) Tree2
-      -(n+1)*|(1->m)(1->n) (D[i][j]*j) Tree3
-      +(1->m)(1->n)(D[i][j]*i*J)       Tree4
-*/
-const int N=2e3+50;
-// D[i][j]
-int Tree1[N][N];
-// D[i][j]*i
-int Tree2[N][N];
-// D[i][j]*j
-int Tree3[N][N];
-// D[i][j]*i*j
-int Tree4[N][N];
-
-int n,m;
-int lowbit(int m){
-     return m&-m;
-}
-
-void add(int x,int y,int v){
-    int v1=v;
-    int v2=v*x;
-    int v3=v*y;
-    int v4=v*x*y;
-    for(int i=x; i<=n; i +=lowbit(i)){
-        for(int j=y; j<=m; j+=lowbit(j)){
-            Tree1[i][j] += v1;
-            Tree2[i][j] += v2;
-            Tree3[i][j] += v3;
-            Tree4[i][j] += v4;
-        }
-    }
-}
-
-// 1 1 -> x y
-int sum(int x,int y){
-    int ans=0;
-    for(int i=x;i>0;i-=lowbit(i)){
-        for(int j=y;j>0;j-=lowbit(j)){
-            ans +=(x+1)*(y+1)*Tree1[i][j]-(y+1)*Tree2[i][j]-(x+1)*Tree3[i][j]+Tree4[i][j];
-        }
-    }
-    return ans;
-}
-
-void add(int a,int b,int c,int d,int v){
-    add(a,b,v);
-    add(a,d+1,-v);
-    add(c+1,b,-v);
-    add(c+1,d+1,v);
-}
-
-int range_sum(int a,int b,int c,int d){
-    return sum(c,d)-sum(a-1,d)-sum(c,b-1)+sum(a-1,b-1);
-}
+```
+三进制状压 DP 的应用场景
+集合覆盖问题：有时候集合中的元素可能需要多次选择。
+游戏中的状态变化：当某个位置具有三种可能的状态（如未占据、己方占据、敌方占据）。
+路径规划：路径上每个节点有三种不同的通过次数的限制等。
 ```
 
 
+
+# 字符串
 
 ## KMP算法
 
@@ -423,183 +190,98 @@ int main(){
 
 
 
-## 逆元求法(除法同余)
-
-```C++
-#include <bits/stdc++.h>
-using namespace std;
-
-const int N = 3e6 + 10;
-
-int mod;
-
-vector<long long> Inverse1(N, 0);
-
-vector<long long> Inverse2(N, 0);
-// 连续数字的逆元
-
-// 从左向右推
-void inverse1(int n)
-{
-    Inverse1[1] = 1;
-    for (int i = 2; i <= n; i++)
-    {
-        Inverse1[i] = (mod - Inverse1[mod % i] * (mod / i) % mod);
-    }
-}
-
-// 连续数字的阶乘的逆元
-
-// 从右往左推
-void inverse2(int n)
-{
-    for (int i = n - 1; i >= 1; i--)
-    {
-        Inverse2[i] = (Inverse2[i + 1] * (i + 1)) % mod;
-    }
-}
-
-// 费马小定理求逆元
-int Power(int base, int exp, int mod)
-{
-    int result = 1;
-    base = base % mod;
-
-    while (exp > 0)
-    {
-        if (exp % 2 == 1)
-        {
-            result = (result * base) % mod;
-        }
-        exp = exp >> 1;
-        base = (base * base) % mod;
-    }
-    return result;
-}
-
-int mod_inverse(int a, int m)
-{
-    return Power(a, m - 2, m);
-}
-
-// 扩展欧几里得算法求逆元
-
-```
-
-
-
-## 矩阵快速幂
+## **Manacher算法**
 
 ```c++
-// * 重点： 关系矩阵
-/*
-递推式子中有n个表达式 就是 n*n的关系矩阵
-第 0 列是递推表达式的关系系数
-【m -> m+n】*关系矩阵(n*n) =[m+1 -> m+n+1] 
-*/
-vector<vector<int>> multipy(vector<vector<int>> &a,vector<vector<int>> &b){
-    int n = a.size();
-    int m=b[0].size();
-    int k=a[0].size();
-    vector<vector<int>> ans(n,vector<int>(m,0));
+int manacher(const string& str) {
+    // 预处理字符串
+    string ss = "#";
+    for (char ch : str) {
+        ss += ch;
+        ss += "#";
+    }
+    int n = ss.length();
+    vector<int> p(n, 0);
+    int center = 0, right = 0, maxLen = 0;
 
-    for (int i = 0; i<n;i++){
-        for(int j=0;j<m;j++){
-            for(int c=0;c<k;c++){
-                ans[i][j]+=a[i][c]*b[c][j];
+    // 查找最长回文子串
+    for (int i = 0, c = 0, r = 0, len; i < n; ++i) {
+        len = (r > i) ? min(p[2 * c - i], r - i) : 1;
+        while (i + len < n && i - len >= 0 && ss[i + len] == ss[i - len]) {
+            ++len;
+        }
+        if (i + len > r) {
+            r = i + len;
+            c = i;
+        }
+        maxLen = max(maxLen, len);
+        p[i] = len;
+    }
+
+    return maxLen - 1;
+}
+```
+
+
+
+## **前缀树**（字典树）
+
+
+```c++
+int cnt = 1; // 层次编号
+// 插入单词
+void insert(const string& word) {
+    int cur = 1;
+    pass[cur]++;
+    for (char ch : word) {
+        int path = ch - 'a';
+        if (tree[cur][path] == 0) {
+            tree[cur][path] = ++cnt;
+        }
+        cur = tree[cur][path];
+        pass[cur]++;
+    }
+    end[cur]++;
+}
+// 查询前缀的数量
+int prefixNumber(const string& prefix) {
+    int cur = 1;
+    for (char ch : prefix) {
+        int path = ch - 'a';
+        if (tree[cur][path] == 0) {
+            return 0;
+        }
+        cur = tree[cur][path];
+    }
+    return pass[cur];
+}
+// 删除单词
+void deleteWord(const string& word) {
+    if (prefixNumber(word) > 0) {
+        int cur = 1;
+        for (char ch : word) {
+            int path = ch - 'a';
+            if (--pass[tree[cur][path]] == 0) {
+                tree[cur][path] = 0;
+                return;
             }
+            cur = tree[cur][path];
         }
+        end[cur]--;
     }
-    return ans;
 }
-
-vector<vector<int>> pow(vector<vector<int>> &m,int p){
-    int n = m.size();
-    vector<vector<int>> ans(n,vector<int>(n,0));
-    for(int i=0;i<n;i++){
-        ans[i][i]=1;
-    }
-    for(;p!=0;p>>=1){
-        if((p&1)!=0){
-            ans =multipy(ans,m);
-        }
-        m=multipy(m,m);
-    }
-    return ans;
+// 清空前缀树
+void clear() {
+    memset(tree, 0, sizeof(tree));
+    memset(pass, 0, sizeof(pass));
+    memset(end, 0, sizeof(end));
+    cnt = 1;
 }
 ```
 
 
 
-## ST表+倍增
-
-```C++
-const int N = 1e4 + 10; // 节点个数
-
-const int M = 256; // 最长路径的二进制的长度
-
-int ST[N][M]; // j号节点 走2的m次方
-
-int num[N]; // 原始的数据表
-
-// 最接近m的二进制值的长度
-int log2(int m)
-{
-    int ans = 0;
-    while ((1 << ans) <= (m >> 1))
-    {
-        ans++;
-    }
-    return ans;
-}
-
-void build_st(int n)
-{
-    // 初始化ST表
-    int power = log2(n);
-    // 初始化了走2的0次方
-    for (int i = 0; i < n; i++)
-    {
-        ST[i][0] = num[i];
-    }
-    // ST[i][j]=ST[ST[i][j-1]][j-1];
-    for (int j = 1; j < power; j++)
-    {
-        for (int i = 0; i < n; i++)
-        {
-            ST[i][j] = ST[ST[i][j - 1]][j - 1];
-        }
-    }
-}
-
-// 最小值就是将 max 改成 min
-// gcd就是将 max 改成 gcd
-void bulid_st_max_min(int n)
-{
-    for (int i = 0; i < n; i++)
-    {
-        ST[i][0] = num[i]; // 从i节点开始的2的0次方的距离的最值
-    }
-
-    for (int i = 1; i <= log2(n); i++)
-    {
-        for (int j = 0; j + (1 << i) - 1 < n; j++)
-        {
-            // question 为什么是 i+(1<<p)-1 而不是 i+(1<<p-1)
-            // 因为我们要扩展的是 p的位置(2的p次方)
-            ST[j][i] = max(ST[j][i - 1], ST[j + (1 << i - 1)][i - 1]);
-        }
-    }
-}
-尽可能接近的p 可以取长度的log2
-// 区间查询 
-i -> j
-i -> i + 2的p次方(尽可能接近j)
-j - 2的p次方(尽可能接近i) -> j
-两个区间查询比较
-```
-
-
+# 数据结构
 
 ## 树上问题
 
@@ -1232,6 +914,656 @@ void dfs2(int u,int f){
 
 
 
+## ST表+倍增
+
+```C++
+const int N = 1e4 + 10; // 节点个数
+
+const int M = 256; // 最长路径的二进制的长度
+
+int ST[N][M]; // j号节点 走2的m次方
+
+int num[N]; // 原始的数据表
+
+// 最接近m的二进制值的长度
+int log2(int m)
+{
+    int ans = 0;
+    while ((1 << ans) <= (m >> 1))
+    {
+        ans++;
+    }
+    return ans;
+}
+
+void build_st(int n)
+{
+    // 初始化ST表
+    int power = log2(n);
+    // 初始化了走2的0次方
+    for (int i = 0; i < n; i++)
+    {
+        ST[i][0] = num[i];
+    }
+    // ST[i][j]=ST[ST[i][j-1]][j-1];
+    for (int j = 1; j < power; j++)
+    {
+        for (int i = 0; i < n; i++)
+        {
+            ST[i][j] = ST[ST[i][j - 1]][j - 1];
+        }
+    }
+}
+
+// 最小值就是将 max 改成 min
+// gcd就是将 max 改成 gcd
+void bulid_st_max_min(int n)
+{
+    for (int i = 0; i < n; i++)
+    {
+        ST[i][0] = num[i]; // 从i节点开始的2的0次方的距离的最值
+    }
+
+    for (int i = 1; i <= log2(n); i++)
+    {
+        for (int j = 0; j + (1 << i) - 1 < n; j++)
+        {
+            // question 为什么是 i+(1<<p)-1 而不是 i+(1<<p-1)
+            // 因为我们要扩展的是 p的位置(2的p次方)
+            ST[j][i] = max(ST[j][i - 1], ST[j + (1 << i - 1)][i - 1]);
+        }
+    }
+}
+尽可能接近的p 可以取长度的log2
+// 区间查询 
+i -> j
+i -> i + 2的p次方(尽可能接近j)
+j - 2的p次方(尽可能接近i) -> j
+两个区间查询比较
+```
+
+
+
+## **树状数组**
+
+### 一维数组
+
+#### **单点增加、范围查询**
+
+
+```c++
+// 范围查询 单点增加
+//*树状数组-> 下标从1开始 */
+int tree[N]; // 树状数组
+/*
+树状数组所管束的范围是 [去掉二进制的lowbit+1,自己] 
+*/
+//lowbit   i最右侧的1的状态
+
+int n;// 原数组长度
+int lowbit(int n){
+    return n & -n;
+}
+
+void add(int i,int v){
+    while(i<=n){
+        tree[i] += v;
+        i +=lowbit(i);
+    }
+}
+//这个sum 是从 1-i 范围的
+int sum(int i){
+    int ans = 0;
+    while(i > 0){
+        ans += tree[i];
+        i -= lowbit(i);
+    }
+    return ans;
+}
+```
+
+
+
+#### 范围增加，单点查询
+
+#####    将tree数组变成原数组的差分数组
+
+```c++
+// 单点查询 范围增加
+/* 原始数组变成差分数组 -> 用差分数组来构建Tree数组
+树状数组-> 下标从1开始 */
+int tree[N]; // 树状数组
+/*
+树状数组所管束的范围是 [去掉二进制的lowbit+1,自己] 
+*/
+// lowbit   i最右侧的1的状态
+int n;// 原数组长度
+int lowbit(int n){
+    return n & -n;
+}
+// l-r 范围增加 v 
+void add(int l,int r,int v){
+    while(l <= n){
+        tree[l] += v;
+        l +=lowbit(l);
+    }
+    int x = r+1;
+    while(x <= n){
+        tree[x] -= v;
+        x +=lowbit(x);
+    }
+}
+// 这个sum 是从 1-i 范围的 用差分来构建 前i个就是原数组 i 的值
+int find(int i){
+    int ans = 0;
+    while(i > 0){
+        ans += tree[i];
+        i -= lowbit(i);
+    }
+    return ans;
+}
+
+```
+
+
+
+#### **范围增加，范围查询**
+
+```c++
+// 范围增加 范围查询( l - r 的范围累加和)
+
+/* Di 是差分
+Tree1 -> Di
+Tree2 -> (i-1)*Di 几号位置加就是 (i-1)*v
+1-r 的累加和 k*(Di) - ((i-1)*Di)
+*/
+const int N = 1e5 + 10;
+long long  Tree1[N];
+long long Tree2[N];
+int n,m; // 数组长度
+
+int lowbit(int m)
+{
+    return m & -m;
+}
+
+void add(long long a[], int i, long long v)
+{
+    while (i <= n)
+    {
+        a[i] += v;
+        i += lowbit(i);
+    }
+}
+
+long long sum(long long a[], int i)
+{
+    long long ans = 0;
+    while (i > 0)
+    {
+        ans += a[i];
+        i -= lowbit(i);
+    }
+    return ans;
+}
+
+void add(int l, int r, long long v)
+{
+    add(Tree1, l, v);
+    add(Tree1, r + 1, -v);
+    add(Tree2, l, (l - 1) * v);
+    add(Tree2, r + 1, -r*v);
+}
+
+long long sum_rage(int l, int r)
+{
+    return sum(Tree1, r) * r - sum(Tree2, r) - sum(Tree1, l - 1) * (l - 1) + sum(Tree2, l - 1);
+}
+```
+
+
+
+### 二维数组
+
+#### 单点增加和范围查询
+
+```c++
+// 二维范围查询 单点增加
+
+int n,m; // n行 m列 下标要从 1 1 开始
+int Tree[N][N];
+int lowbit(int m){
+    return m&-m;
+}
+
+int sum(int x,int y,int v){
+    int ans=0;
+    for (int i=x;i>0;i-=lowbit(i)){
+        for (int j=y;j>0;j-=lowbit(j)){
+            ans+=Tree[i][j];
+        }
+    }
+    return ans;
+}
+
+int add(int x,int y,int v){
+    for(int i=x;i<=n;i+=lowbit(i)){
+        for (int j=y;j<=m;j+=lowbit(j)){
+            Tree[i][j]+=v;
+        }
+    }
+}
+
+```
+
+
+
+#### **范围增加和范围查询**
+
+```c++
+// 二维单点查询 范围增加
+
+/*
+  求和的差分信息是
+      Tree1 D[i][j]
+      sum(1,1,n,m)=(n+1)*(m+1)*D[i][j] Tree1
+      -(m+1)*|(1->m)(1->n) (D[i][j]*i) Tree2
+      -(n+1)*|(1->m)(1->n) (D[i][j]*j) Tree3
+      +(1->m)(1->n)(D[i][j]*i*J)       Tree4
+*/
+const int N=2e3+50;
+// D[i][j]
+int Tree1[N][N];
+// D[i][j]*i
+int Tree2[N][N];
+// D[i][j]*j
+int Tree3[N][N];
+// D[i][j]*i*j
+int Tree4[N][N];
+
+int n,m;
+int lowbit(int m){
+     return m&-m;
+}
+
+void add(int x,int y,int v){
+    int v1=v;
+    int v2=v*x;
+    int v3=v*y;
+    int v4=v*x*y;
+    for(int i=x; i<=n; i +=lowbit(i)){
+        for(int j=y; j<=m; j+=lowbit(j)){
+            Tree1[i][j] += v1;
+            Tree2[i][j] += v2;
+            Tree3[i][j] += v3;
+            Tree4[i][j] += v4;
+        }
+    }
+}
+
+// 1 1 -> x y
+int sum(int x,int y){
+    int ans=0;
+    for(int i=x;i>0;i-=lowbit(i)){
+        for(int j=y;j>0;j-=lowbit(j)){
+            ans +=(x+1)*(y+1)*Tree1[i][j]-(y+1)*Tree2[i][j]-(x+1)*Tree3[i][j]+Tree4[i][j];
+        }
+    }
+    return ans;
+}
+
+void add(int a,int b,int c,int d,int v){
+    add(a,b,v);
+    add(a,d+1,-v);
+    add(c+1,b,-v);
+    add(c+1,d+1,v);
+}
+
+int range_sum(int a,int b,int c,int d){
+    return sum(c,d)-sum(a-1,d)-sum(c,b-1)+sum(a-1,b-1);
+}
+```
+
+
+
+# 图论
+
+## 离散化(模板)
+
+```C++
+int old[N];
+int New[N];
+int n;
+    for(int i=1;i<=n;i++) {
+        cin>>old[i];
+        New[i]=old[i];
+        }
+        sort(old,old+n);
+    int cnt=n;
+    cnt=unique(old+1,old+1+n)-(old+1);
+    for(int i=1;i<=cnt;i++){
+        New[i]=lower_bound(old+1,old+1+n,New[i])-old;
+    }
+
+    for(int i=1;i<=cnt;i++) cout<<New[i]<<" ";//每个值在原始位置的大小
+```
+
+
+
+## 并查集
+
+```C++
+const int N = 1e5 + 10;
+int father[N];
+// 初始化并查集
+void build(int n) {
+    for (int i = 0; i < n; i++) {
+        father[i] = i;
+    }
+}
+// 查找元素的根，并进行路径压缩
+int find(int i) {
+    if (i != father[i]) {
+        father[i] = find(father[i]);
+    }
+    return father[i];
+}
+// 判断两个元素是否属于同一个集合
+bool isSameSet(int x, int y) {
+    return find(x) == find(y);
+}
+// 合并两个集合
+void unite(int x, int y) {
+    father[find(x)] = find(y);
+}
+
+```
+
+
+
+## 最小生成树
+
+### kruksal算法
+
+```C++
+#include <bits/stdc++.h>
+using namespace std;
+
+// 并查集模板
+
+const int N = 1e5 + 10;
+int father[N];
+
+// 初始化并查集
+void build(int n) {
+    for (int i = 0; i < n; i++) {
+        father[i] = i;
+    }
+}
+
+// 查找元素的根，并进行路径压缩
+int find(int i) {
+    if (i != father[i]) {
+        father[i] = find(father[i]);
+    }
+    return father[i];
+}
+
+// 判断两个元素是否属于同一个集合
+bool isSameSet(int x, int y) {
+    return find(x) == find(y);
+}
+
+// 合并两个集合
+void unite(int x, int y) {
+    father[find(x)] = find(y);
+}
+
+// 最小生成树 (Kruskal 算法)
+struct Edge {
+    int u, v, weight;
+    bool operator<(const Edge& other) const { // 通过这个改变sort的排序顺序
+        return weight < other.weight;
+    }
+};
+
+vector<Edge> edges;
+
+int kruskal(int n, int m) {
+    // n: 顶点数, m: 边数
+    build(n); // 初始化并查集
+    sort(edges.begin(), edges.end()); // 按照权重排序边
+
+    int mst_weight = 0;
+    int edges_used = 0;
+
+    for (int i = 0; i < m; i++) {
+        int u = edges[i].u;
+        int v = edges[i].v;
+        int weight = edges[i].weight;
+
+        if (!isSameSet(u, v)) {
+            unite(u, v);
+            mst_weight += weight;
+            edges_used++;
+            if (edges_used == n - 1) {
+                break;
+            }
+        }
+    }
+    return mst_weight;
+}
+
+```
+
+
+
+## DIjkstra算法
+
+```C++
+/ 最短路径 (Dijkstra 算法)
+const int INF = 1e9;
+vector<pair<int, int>> adj[N]; // 邻接节点和权重
+
+vector<int> dijkstra(int start, int n) {
+    vector<int> dist(n, INF);
+    dist[start] = 0;
+priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;  // 默认用pair的first来比较，相等则用second来比较
+    pq.push({0, start});
+
+    while (!pq.empty()) {
+        auto [d, u] = pq.top();
+        pq.pop();
+
+        if (d > dist[u]) continue;
+
+        for (auto [v, weight] : adj[u]) {
+            if (dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+                pq.push({dist[v], v});
+            }
+        }
+    }
+    return dist;
+}
+
+```
+
+
+
+## 分层图最短路
+
+```
+
+```
+
+
+
+## Floyd算法
+
+```C++
+for(int k=1;k<=n;k++){
+    for(int i=1;i<=n;i++){
+        for(int j=1;j<=n;j++){
+            dp[i][j]=min(dp[i][j],dp[i][k]+dp[k][j]);
+        }
+    }
+}
+```
+
+
+
+## SPFA
+
+```C++
+// 最短路径 (SPFA 算法)
+vector<int> spfa(int start, int n) {
+    vector<int> dist(n, INF);
+    vector<bool> in_queue(n, false);
+    queue<int> q;
+
+    dist[start] = 0;
+    q.push(start);
+    in_queue[start] = true;
+
+    while (!q.empty()) {
+        int u = q.front();
+        q.pop();
+        in_queue[u] = false;
+
+        for (auto [v, weight] : adj[u]) {
+            if (dist[u] + weight < dist[v]) {
+                dist[v] = dist[u] + weight;
+                if (!in_queue[v]) {
+                    q.push(v);
+                    in_queue[v] = true;
+                }
+            }
+        }
+    }
+    return dist;
+}
+
+```
+
+
+
+## 拓扑排序
+
+------
+
+通过 节点的入度大小来构建优先队列来实现
+
+# 数学
+
+## 逆元求法(除法同余)
+
+```C++
+#include <bits/stdc++.h>
+using namespace std;
+
+const int N = 3e6 + 10;
+
+int mod;
+
+vector<long long> Inverse1(N, 0);
+
+vector<long long> Inverse2(N, 0);
+// 连续数字的逆元
+
+// 从左向右推
+void inverse1(int n)
+{
+    Inverse1[1] = 1;
+    for (int i = 2; i <= n; i++)
+    {
+        Inverse1[i] = (mod - Inverse1[mod % i] * (mod / i) % mod);
+    }
+}
+
+// 连续数字的阶乘的逆元
+
+// 从右往左推
+void inverse2(int n)
+{
+    for (int i = n - 1; i >= 1; i--)
+    {
+        Inverse2[i] = (Inverse2[i + 1] * (i + 1)) % mod;
+    }
+}
+
+// 费马小定理求逆元
+int Power(int base, int exp, int mod)
+{
+    int result = 1;
+    base = base % mod;
+
+    while (exp > 0)
+    {
+        if (exp % 2 == 1)
+        {
+            result = (result * base) % mod;
+        }
+        exp = exp >> 1;
+        base = (base * base) % mod;
+    }
+    return result;
+}
+
+int mod_inverse(int a, int m)
+{
+    return Power(a, m - 2, m);
+}
+
+// 扩展欧几里得算法求逆元
+
+```
+
+
+
+## 矩阵快速幂
+
+```c++
+// * 重点： 关系矩阵
+/*
+递推式子中有n个表达式 就是 n*n的关系矩阵
+第 0 列是递推表达式的关系系数
+【m -> m+n】*关系矩阵(n*n) =[m+1 -> m+n+1] 
+*/
+vector<vector<int>> multipy(vector<vector<int>> &a,vector<vector<int>> &b){
+    int n = a.size();
+    int m=b[0].size();
+    int k=a[0].size();
+    vector<vector<int>> ans(n,vector<int>(m,0));
+
+    for (int i = 0; i<n;i++){
+        for(int j=0;j<m;j++){
+            for(int c=0;c<k;c++){
+                ans[i][j]+=a[i][c]*b[c][j];
+            }
+        }
+    }
+    return ans;
+}
+
+vector<vector<int>> pow(vector<vector<int>> &m,int p){
+    int n = m.size();
+    vector<vector<int>> ans(n,vector<int>(n,0));
+    for(int i=0;i<n;i++){
+        ans[i][i]=1;
+    }
+    for(;p!=0;p>>=1){
+        if((p&1)!=0){
+            ans =multipy(ans,m);
+        }
+        m=multipy(m,m);
+    }
+    return ans;
+}
+```
+
+
+
 
 
 ## 线性基
@@ -1475,6 +1807,46 @@ int gaussElimination() {
 
 
 
+## 扩展欧几里德算法 + 裴属定理
+
+gcd 的意义：表示A，B之间的最大公约数 == ？？
+
+裴属定理：
+
+​       对于 A , B 的最大公因数能用这样一个表达式子来表达
+
+​        x * A + y * B = k * gcd(A, B)
+
+扩展欧几里德
+
+​        如何根据gcd来反推（x, y）
+
+​        
+
+```c++
+# 扩展欧几里德
+int x, y, px, py, d;
+
+// px, py 是上一个阶层的x, y, d是最大公约数。 
+
+void exgcd(int a, int b){
+     // a 大 b 小
+    if (b == 0) {
+			  d = a;
+			  x = 1;
+			  y = 0;
+		} else {
+			  exgcd(b, a % b);
+			  px = x;
+			  py = y;
+			  x = py;
+			  y = px - py * (a / b);
+		}
+}
+```
+
+
+
 ## 01 分数规划
 
 **二分法 + 动态规划**：
@@ -1518,324 +1890,3 @@ double fractional01DP() {
 
 
 
-## DP问题
-
-### 区间dp
-
-```
-区间 DP 的基本思想
-区间 DP 的核心在于如何有效地求解区间上某个问题的最优解。通常会考虑如何通过更小的区间的解来合并、构造更大区间的解。
-
-区间 DP 的状态可以表示为一个二维数组 dp[l][r]，表示区间 [l, r] 的最优解。状态转移方程往往基于对区间的划分，将问题划分为两个更小的子区间进行求解。
-
-区间 DP 的一般步骤
-定义状态：
-
-dp[l][r] 表示从区间 l 到区间 r 的最优解。
-状态转移方程：
-
-根据问题的需求，将区间 [l, r] 分成若干部分，利用这些子区间的解来更新 dp[l][r]。
-状态转移方程往往涉及一个分割点 k，即 dp[l][r] 可以通过子区间 [l, k] 和 [k+1, r] 的解来得到。
-初始化：
-
-确定初始的单个区间的值，通常是区间长度为 1 的情况。
-计算顺序：
-
-需要从小的区间开始计算，逐步扩展到更大的区间，最终求解整个区间的最优解。
-```
-
-### 树形dp
-
-```
-树形 DP 的基本步骤
-树的表示方式：
-
-通常用邻接表表示树。
-定义状态：
-
-通常状态和节点相关，例如 dp[u] 表示以节点 u 为根的子树的最优解。
-状态转移方程：
-
-状态转移通常依赖于节点的子节点的状态，比如通过遍历节点的所有子节点来更新父节点的状态。
-递归求解：
-
-使用 DFS（深度优先搜索）来从叶子节点递归地求解父节点的状态。
-```
-
-
-
-### 状压dp
-
-```
-
-```
-
-
-
-### 数位dp
-
-```
-数位 DP 的一般步骤
-数位分解：
-
-将数字转化为数组，从高位到低位存储，以便按位操作。
-状态定义：
-
-通常用 dp[pos][status] 表示当前在第 pos 位时的一种状态。例如，状态可以包含是否受限、前一位是否为某个特定数字等。
-递归转移：
-
-根据当前位的数字和限制情况来判断如何转移。
-在递归过程中，考虑当前位的所有可能值，然后转移到下一位。
-记忆化：
-
-将已经计算过的状态存储在 dp 数组中，以避免重复计算。
-```
-
-
-
-### 轮廓线dp
-
-```
-
-```
-
-
-
-### 三进制状压dp
-
-```
-三进制状压 DP 的应用场景
-集合覆盖问题：有时候集合中的元素可能需要多次选择。
-游戏中的状态变化：当某个位置具有三种可能的状态（如未占据、己方占据、敌方占据）。
-路径规划：路径上每个节点有三种不同的通过次数的限制等。
-```
-
-
-
-## 图论
-
-### 离散化(模板)
-
-```C++
-int old[N];
-int New[N];
-int n;
-    for(int i=1;i<=n;i++) {
-        cin>>old[i];
-        New[i]=old[i];
-        }
-        sort(old,old+n);
-    int cnt=n;
-    cnt=unique(old+1,old+1+n)-(old+1);
-    for(int i=1;i<=cnt;i++){
-        New[i]=lower_bound(old+1,old+1+n,New[i])-old;
-    }
-
-    for(int i=1;i<=cnt;i++) cout<<New[i]<<" ";//每个值在原始位置的大小
-```
-
-
-
-### 并查集
-
-```C++
-const int N = 1e5 + 10;
-int father[N];
-// 初始化并查集
-void build(int n) {
-    for (int i = 0; i < n; i++) {
-        father[i] = i;
-    }
-}
-// 查找元素的根，并进行路径压缩
-int find(int i) {
-    if (i != father[i]) {
-        father[i] = find(father[i]);
-    }
-    return father[i];
-}
-// 判断两个元素是否属于同一个集合
-bool isSameSet(int x, int y) {
-    return find(x) == find(y);
-}
-// 合并两个集合
-void unite(int x, int y) {
-    father[find(x)] = find(y);
-}
-
-```
-
-
-
-### 最小生成树
-
-##### kruksal算法
-
-```C++
-#include <bits/stdc++.h>
-using namespace std;
-
-// 并查集模板
-
-const int N = 1e5 + 10;
-int father[N];
-
-// 初始化并查集
-void build(int n) {
-    for (int i = 0; i < n; i++) {
-        father[i] = i;
-    }
-}
-
-// 查找元素的根，并进行路径压缩
-int find(int i) {
-    if (i != father[i]) {
-        father[i] = find(father[i]);
-    }
-    return father[i];
-}
-
-// 判断两个元素是否属于同一个集合
-bool isSameSet(int x, int y) {
-    return find(x) == find(y);
-}
-
-// 合并两个集合
-void unite(int x, int y) {
-    father[find(x)] = find(y);
-}
-
-// 最小生成树 (Kruskal 算法)
-struct Edge {
-    int u, v, weight;
-    bool operator<(const Edge& other) const { // 通过这个改变sort的排序顺序
-        return weight < other.weight;
-    }
-};
-
-vector<Edge> edges;
-
-int kruskal(int n, int m) {
-    // n: 顶点数, m: 边数
-    build(n); // 初始化并查集
-    sort(edges.begin(), edges.end()); // 按照权重排序边
-
-    int mst_weight = 0;
-    int edges_used = 0;
-
-    for (int i = 0; i < m; i++) {
-        int u = edges[i].u;
-        int v = edges[i].v;
-        int weight = edges[i].weight;
-
-        if (!isSameSet(u, v)) {
-            unite(u, v);
-            mst_weight += weight;
-            edges_used++;
-            if (edges_used == n - 1) {
-                break;
-            }
-        }
-    }
-    return mst_weight;
-}
-
-```
-
-
-
-### DIjkstra算法
-
-```C++
-/ 最短路径 (Dijkstra 算法)
-const int INF = 1e9;
-vector<pair<int, int>> adj[N]; // 邻接节点和权重
-
-vector<int> dijkstra(int start, int n) {
-    vector<int> dist(n, INF);
-    dist[start] = 0;
-priority_queue<pair<int, int>, vector<pair<int, int>>, greater<>> pq;  // 默认用pair的first来比较，相等则用second来比较
-    pq.push({0, start});
-
-    while (!pq.empty()) {
-        auto [d, u] = pq.top();
-        pq.pop();
-
-        if (d > dist[u]) continue;
-
-        for (auto [v, weight] : adj[u]) {
-            if (dist[u] + weight < dist[v]) {
-                dist[v] = dist[u] + weight;
-                pq.push({dist[v], v});
-            }
-        }
-    }
-    return dist;
-}
-
-```
-
-
-
-### 分层图最短路
-
-```
-
-```
-
-
-
-### Floyd算法
-
-```C++
-for(int k=1;k<=n;k++){
-    for(int i=1;i<=n;i++){
-        for(int j=1;j<=n;j++){
-            dp[i][j]=min(dp[i][j],dp[i][k]+dp[k][j]);
-        }
-    }
-}
-```
-
-
-
-### SPFA
-
-```C++
-// 最短路径 (SPFA 算法)
-vector<int> spfa(int start, int n) {
-    vector<int> dist(n, INF);
-    vector<bool> in_queue(n, false);
-    queue<int> q;
-
-    dist[start] = 0;
-    q.push(start);
-    in_queue[start] = true;
-
-    while (!q.empty()) {
-        int u = q.front();
-        q.pop();
-        in_queue[u] = false;
-
-        for (auto [v, weight] : adj[u]) {
-            if (dist[u] + weight < dist[v]) {
-                dist[v] = dist[u] + weight;
-                if (!in_queue[v]) {
-                    q.push(v);
-                    in_queue[v] = true;
-                }
-            }
-        }
-    }
-    return dist;
-}
-
-```
-
-
-
-### 拓扑排序
-
-------
-
-通过 节点的入度大小来构建优先队列来实现
